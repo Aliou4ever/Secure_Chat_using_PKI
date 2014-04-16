@@ -8,6 +8,7 @@ package Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -16,9 +17,12 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -34,6 +38,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import static sun.security.krb5.Confounder.bytes;
 
 /**
  *
@@ -44,15 +49,13 @@ public class Certificate {
     public static KeyPair generateKeyPair(){
         KeyPair pair = null;
         try {
-            //KeyPairGenerator key = KeyPairGenerator.getInstance("RSA");
-            //KeyPair keys = key.generateKeyPair();
-            KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-            kpGen.initialize(1024, new SecureRandom());
-            pair = kpGen.generateKeyPair();            
+            KeyPairGenerator key = KeyPairGenerator.getInstance("RSA");
+            pair = key.generateKeyPair();
+            //KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");
+            //kpGen.initialize(1024, new SecureRandom());
+            //pair = kpGen.generateKeyPair();            
         } catch (NoSuchAlgorithmException ex) {
              System.err.println("erreur generation pair de cle CAroot :"+ex);
-        } catch (NoSuchProviderException ex) {
-            System.err.println("erreur generation pair de cle CAroot :"+ex);
         }
         return pair;
     }
@@ -99,4 +102,19 @@ public class Certificate {
         }
         return cert;
     }
+    
+    public static X509Certificate recreateCertFromBytes(byte [] certBytes){
+        X509Certificate cert= null;
+        try {
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            InputStream in = new ByteArrayInputStream(certBytes);
+            cert = (X509Certificate)certFactory.generateCertificate(in);            
+        } catch (CertificateException ex) {
+            Logger.getLogger(Certificate.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return cert;
+    
+    
+    }
+    
 }
