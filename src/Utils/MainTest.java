@@ -5,22 +5,18 @@
  */
 
 package Utils;
-
-import data_base.AccessBD;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import Utils.*;
+import data_base.MySQL_DB;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.sql.rowset.serial.SerialBlob;
 
 /**
  *
@@ -29,27 +25,47 @@ import java.util.logging.Logger;
 public class MainTest {
     public static void main(String args[]) throws CertificateEncodingException, CertificateException, UnsupportedEncodingException, SQLException{        
 
-        KeyPair pair = Utils.Certificate.generateKeyPair();        
-        X509Certificate cert = Utils.Certificate.generateCertForCAroot(pair);       
+        KeyPair pair = Certificate.generateKeyPair();        
+        X509Certificate cert = Certificate.generateCertForCAroot(pair);       
         byte [] bytes = cert.getEncoded();
-        String s = new String(bytes);
-        System.out.println("cert 1 :"+s );
-        X509Certificate cert2 = Utils.Certificate.recreateCertFromBytes(bytes);
+       
+        X509Certificate cert2 = Utils.Certificate.recreateCertFromBytes(bytes); 
         byte [] bytes2 = cert2.getEncoded();
-        System.out.println("cert 2 :"+bytes2 );        
-        if(cert2.equals(cert))System.out.println("c'est les meme yay :)");
-        else System.err.println("NON KO#########################");
-        if((new String(bytes2)).equals(s))
-        System.out.println("yesssssssssssssssssssssssssssssssssssssssss");
         
-        AccessBD bd = new AccessBD("C:\\Users\\khaled\\Desktop\\BDtest.accdb","","");
+        if(cert2.equals(cert))System.out.println("0K**************:)");
+        else System.err.println("KO000#########################:(");      
+        
+        MySQL_DB bd = new MySQL_DB("/localhost/PKI2014","root","");
         bd.connexion();
-        Connection con = bd.getCon();        
-        PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(""
-                + "insert into Client(nom,certificat)"
-                + "values('+"+cert.getIssuerDN()+"','"+cert.getEncoded()+"')");
-        pstmt.executeUpdate();
-        pstmt.close();
+        Connection con = bd.getCon();  
+        
+        String sql ="insert into Certificat(nom,certificat)values(?,?)";
+        PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(sql);
+        pstmt.setObject(1, "CAroot");
+        pstmt.setBytes(2, bytes);
+        pstmt.execute();
+        pstmt.close();        
+        
+        String sql2="select * from Certificat where nom='CAroot'";        
+        PreparedStatement ps=con.prepareStatement(sql2);
+        ResultSet rs =ps.executeQuery();
+        rs.next();
+        String s = rs.getString("nom");
+        System.out.println(s);
+        //rs.next();
+        byte [] bytes3 = rs.getBytes("certificat");        
+        ps.close();
+        System.out.println("length bytes: "+bytes.length+"  length bytes2: "
+                +bytes2.length+ " length bytes3: "+bytes3.length);
+        
         bd.deconnexion();
+        
+        X509Certificate cert3 = Utils.Certificate.recreateCertFromBytes(bytes3);
+
+        if(cert3.equals(cert)) System.out.println("yes :) c'est le meme certificat on a bien réussi a l'avoir");
+        else System.err.println("ça n'a pas marché :( Koooooooooooooooo");
+        
+                     
+        
     }
 }

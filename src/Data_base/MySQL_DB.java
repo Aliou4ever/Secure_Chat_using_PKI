@@ -10,24 +10,24 @@ import java.sql.*;
  *
  * @author khaled
  */
-public class AccessBD {
-    private String path;// C:\\Users\\khaled\\Desktop\\BDtest.accdb
-    private String login;
-    private String password;
+public class MySQL_DB {
+    private String url;// /localhost/PKI2014
+    private String login; //root
+    private String password;// empty ""
     private Connection con ;
 
    
 
-    public AccessBD(String path, String login, String password) {
-        this.path = path;
+    public MySQL_DB(String path, String login, String password) {
+        this.url = path;
         this.login = login;
         this.password = password;
     }
     public boolean connexion(){
         boolean retConn = false;
         try{
-            Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-            String url="jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ="+path;
+            Class.forName("com.mysql.jdbc.Driver");
+            String url= "jdbc:mysql:/"+this.url+"?user="+login+"&password="+password;
             con = DriverManager.getConnection(url,login,password);
             System.out.println("connexion a la base OK ");
             retConn = true;
@@ -51,7 +51,7 @@ public class AccessBD {
     }
     
     public void setPath(String path) {
-        this.path = path;
+        this.url = path;
     }
 
     public void setLogin(String login) {
@@ -63,7 +63,7 @@ public class AccessBD {
     }
 
     public String getPath() {
-        return path;
+        return url;
     }
 
     public String getLogin() {
