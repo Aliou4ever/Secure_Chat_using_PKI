@@ -10,17 +10,22 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author khaled
  */
 public class Keys {
-    
+    public static KeyPair generateKeyPair(){
+        KeyPair pair = null;
+        try {
+            KeyPairGenerator key = KeyPairGenerator.getInstance("RSA");
+            pair = key.generateKeyPair();           
+        } catch (NoSuchAlgorithmException ex) {
+             System.err.println("erreur generation pair de cle :"+ex);
+        }
+        return pair;
+    }
     
     public static PublicKey recreatePublicKey(String path){
         FileInputStream file = null;
@@ -34,20 +39,14 @@ public class Keys {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             key_public = (RSAPublicKey) keyFactory.generatePublic(cle_reconst);
             
-        } catch (IOException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (Exception ex) {
+            System.err.println("Probeleme de recreartion cle public: "+ex);
         } finally {
             try {
                 file.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }catch (Exception ex) {
+                System.err.println("Probeleme de fermiture de fichier de la cle public: "+ex);
+        }
         }
         return key_public;
     }
@@ -61,14 +60,8 @@ public class Keys {
             ObjectOutputStream obj_stream = new ObjectOutputStream(file3);
             obj_stream.writeObject(RSAspec.getModulus());
             obj_stream.writeObject(RSAspec.getPublicExponent());        
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Keys.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            System.err.println("Probeleme de sauvegarde de la cle public dans un fichier: "+ex);
         }
     }
 }

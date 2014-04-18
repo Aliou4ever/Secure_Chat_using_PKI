@@ -46,59 +46,36 @@ import static sun.security.krb5.Confounder.bytes;
  */
 public class Certificate {
     
-    public static KeyPair generateKeyPair(){
-        KeyPair pair = null;
-        try {
-            KeyPairGenerator key = KeyPairGenerator.getInstance("RSA");
-            pair = key.generateKeyPair();
-            //KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-            //kpGen.initialize(1024, new SecureRandom());
-            //pair = kpGen.generateKeyPair();            
-        } catch (NoSuchAlgorithmException ex) {
-             System.err.println("erreur generation pair de cle CAroot :"+ex);
-        }
-        return pair;
-    }
-    public static X509Certificate generateCertForCAroot(KeyPair pair){        
-
+    
+    public static X509Certificate generateCertForCAroot(KeyPair pair){
         // Generate self-signed certificate
-        X509Certificate cert=null;
+        X509Certificate cert = null;
         Security.addProvider(new BouncyCastleProvider());
-
         String subject = "CAroot";
         KeyPair keyPair = pair;
-        String issuerName = "CAroot"; // Issuer same as subject
+        String issuerName = "CAroot";
         BigInteger serialNumber = BigInteger.ONE;
-
         Calendar cal = Calendar.getInstance();
         Date notBefore = cal.getTime();
         cal.add(Calendar.YEAR, 1);
         Date notAfter = cal.getTime();
-
         JcaX509v3CertificateBuilder builder;
-
         X500Name subjectFormated = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.CN, subject).build();
         X500Name issuerFormated = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.CN, issuerName).build();
         builder = new JcaX509v3CertificateBuilder(issuerFormated, serialNumber, notBefore, notAfter, subjectFormated, keyPair.getPublic());
-        try{
-        //Signer will be the same ourselves
-        ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(keyPair.getPrivate());//our own key
-
-        //------------------------- Extensions ------------------------
-        builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.basicConstraints, true, new BasicConstraints(1)); //Should be critics
-
-        SubjectKeyIdentifier subjectKeyIdentifier = new JcaX509ExtensionUtils().createSubjectKeyIdentifier(keyPair.getPublic());
-        builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
-
-        KeyUsage keyUsage = new KeyUsage(KeyUsage.keyCertSign);
-        builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.keyUsage, true, keyUsage); //KeyUsage must be critic
-
-        ExtendedKeyUsage extendedKeyUsage = new ExtendedKeyUsage(KeyPurposeId.anyExtendedKeyUsage);
-        builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.extendedKeyUsage, false, extendedKeyUsage);
-        X509CertificateHolder holder = builder.build(contentSigner);
-        cert = (X509Certificate) java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(holder.getEncoded()));
-        }catch(Exception ex){
-            System.err.println("erreur generation certificat auto singé CAroot :"+ex);
+        try {
+            ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(keyPair.getPrivate());
+            builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.basicConstraints, true, new BasicConstraints(1));
+            SubjectKeyIdentifier subjectKeyIdentifier = new JcaX509ExtensionUtils().createSubjectKeyIdentifier(keyPair.getPublic());
+            builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.keyCertSign);
+            builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.keyUsage, true, keyUsage);
+            ExtendedKeyUsage extendedKeyUsage = new ExtendedKeyUsage(KeyPurposeId.anyExtendedKeyUsage);
+            builder.addExtension(org.bouncycastle.asn1.x509.X509Extension.extendedKeyUsage, false, extendedKeyUsage);
+            X509CertificateHolder holder = builder.build(contentSigner);
+            cert = (X509Certificate) java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(holder.getEncoded()));
+        } catch (Exception ex) {
+            System.err.println("erreur generation certificat auto singé CAroot :" + ex);
         }
         return cert;
     }
@@ -109,8 +86,8 @@ public class Certificate {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
             InputStream in = new ByteArrayInputStream(certBytes);
             cert = (X509Certificate)certFactory.generateCertificate(in);            
-        } catch (CertificateException ex) {
-            Logger.getLogger(Certificate.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            System.err.println("Probeleme de recreartion de certificat : "+ex);
         }
         return cert;
     

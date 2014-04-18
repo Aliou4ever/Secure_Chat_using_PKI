@@ -22,7 +22,7 @@ public class CAroot {
 
     public CAroot() {        
             //generer la pair de clé pour le CAroot
-            KeyPair pair = Utils.Certificate.generateKeyPair();
+            KeyPair pair = Utils.Keys.generateKeyPair();
             this.caRoot_PrivateKey = pair.getPrivate();
             this.caRoot_PublicKey = pair.getPublic();
             this.caRoot_Cert = Utils.Certificate.generateCertForCAroot(pair);
@@ -30,7 +30,7 @@ public class CAroot {
     }    
     public CAroot(String BDpass) {        
             //generer la pair de clé pour le CAroot
-            KeyPair pair = Utils.Certificate.generateKeyPair();
+            KeyPair pair = Utils.Keys.generateKeyPair();
             this.caRoot_PrivateKey = pair.getPrivate();
             this.caRoot_PublicKey = pair.getPublic();
             this.caRoot_Cert = Utils.Certificate.generateCertForCAroot(pair);

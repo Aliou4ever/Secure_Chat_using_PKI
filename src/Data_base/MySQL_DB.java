@@ -5,13 +5,14 @@
  */
 
 package data_base;
+import java.security.cert.X509Certificate;
 import java.sql.*;
 /**
  *
  * @author khaled
  */
 public class MySQL_DB {
-    private String url;// /localhost/PKI2014
+    private String url;// localhost
     private String login; //root
     private String password;// empty ""
     private Connection con ;
@@ -27,7 +28,7 @@ public class MySQL_DB {
         boolean retConn = false;
         try{
             Class.forName("com.mysql.jdbc.Driver");
-            String url= "jdbc:mysql:/"+this.url+"?user="+login+"&password="+password;
+            String url= "jdbc:mysql://"+this.url+"/PKI2014?user="+login+"&password="+password;
             con = DriverManager.getConnection(url,login,password);
             System.out.println("connexion a la base OK ");
             retConn = true;
@@ -48,6 +49,35 @@ public class MySQL_DB {
         
         }
         return retDecon;
+    }
+    
+    public void insertCertificat(X509Certificate cert, String login){
+        try {
+            byte [] bytes = cert.getEncoded();
+            String sql ="insert into Certificat(login,certificat)values(?,?)";
+            PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(sql);
+            pstmt.setObject(1, login);
+            pstmt.setBytes(2, bytes);
+            pstmt.execute();    
+            pstmt.close();
+        } catch (Exception ex) {
+            System.err.println("Probeleme insert certificat dans la base: "+ex);
+        } 
+    }
+    
+    public X509Certificate getCertificate(String login){
+        byte [] bytes =null;
+        try {
+            String sql2="select * from Certificat where login='"+login+"'";
+            PreparedStatement ps=con.prepareStatement(sql2);
+            ResultSet rs =ps.executeQuery();
+            rs.next();
+            bytes = rs.getBytes("certificat");
+            ps.close();            
+        } catch (Exception ex) {
+            System.err.println("Probeleme recuperation de certificat a partir de la base: "+ex);
+        }
+        return Utils.Certificate.recreateCertFromBytes(bytes);
     }
     
     public void setPath(String path) {
