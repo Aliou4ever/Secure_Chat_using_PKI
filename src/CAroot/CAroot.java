@@ -15,6 +15,7 @@ import java.security.cert.X509Certificate;
  * @author khaled
  */
 public class CAroot {
+    // ceci est un commentaire
     X509Certificate caRoot_Cert;    
     PublicKey caRoot_PublicKey;
     PrivateKey caRoot_PrivateKey;
