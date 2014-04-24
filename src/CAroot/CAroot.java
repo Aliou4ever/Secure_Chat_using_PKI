@@ -15,27 +15,22 @@ import java.security.cert.X509Certificate;
  * @author khaled
  */
 public class CAroot {
-    // ceci est un commentaire
     X509Certificate caRoot_Cert;    
     PublicKey caRoot_PublicKey;
     PrivateKey caRoot_PrivateKey;
+    String BD_url;
     String BD_pass;
+    String BD_login;
 
-    public CAroot() {        
-            //generer la pair de clé pour le CAroot
-            KeyPair pair = Utils.Keys.generateKeyPair();
-            this.caRoot_PrivateKey = pair.getPrivate();
-            this.caRoot_PublicKey = pair.getPublic();
-            this.caRoot_Cert = Utils.Certificate.generateCertForCAroot(pair);
-            this.BD_pass ="";
-    }    
-    public CAroot(String BDpass) {        
+    public CAroot(String BD_url, String BD_login, String BDpass) {        
             //generer la pair de clé pour le CAroot
             KeyPair pair = Utils.Keys.generateKeyPair();
             this.caRoot_PrivateKey = pair.getPrivate();
             this.caRoot_PublicKey = pair.getPublic();
             this.caRoot_Cert = Utils.Certificate.generateCertForCAroot(pair);
             this.BD_pass = BDpass; 
+            this.BD_login = BD_login;
+            this.BD_url = BD_url;
     }    
 
     public void setCaRoot_Cert(X509Certificate caRoot_Cert) {

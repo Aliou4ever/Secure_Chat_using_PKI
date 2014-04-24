@@ -14,10 +14,8 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
  * @author khaled
  */
 public class MainTest {
-    public static void main(String args[]) {       
-     
-       
-        
+    public static void main(String args[]) {  
+          
     }
     public static void test1(){    
     //code pour inserer et recupercer un cerificat dans la base
@@ -25,8 +23,8 @@ public class MainTest {
         X509Certificate cert = Certificate.generateCertForCAroot(pair);       
         MySQL_DB bd = new MySQL_DB("localhost","root","");
         bd.connexion();
-        bd.insertCertificat(cert,"CAroot3");
-        X509Certificate cert3 = bd.getCertificate("CAroot3");
+        bd.insertCertificat(cert,"CAroot4");
+        X509Certificate cert3 = bd.getCertificate("CAroot4");
         bd.deconnexion();        
         if(cert3.equals(cert)) System.out.println("yes :) c'est le meme certificat on a bien réussi a l'avoir");
         else System.err.println("ça n'a pas marché :( Koooooooooooooooo");
@@ -52,6 +50,28 @@ public class MainTest {
         byte []tab2 =Digester.hacher(s);
         System.out.println("c'est les meme: "+Digester.digestVerify(tab1, tab2));
     
+    }
+    
+    public static void test4(){
+               //ajouter un user 
+            MySQL_DB db = new MySQL_DB("localhost", "root", "");
+            db.connexion();            
+            byte [] pass =Digester.hacher("AdminPass");
+            db.addUser("Admin2", pass);            
+            System.out.println("user exists: "+db.userExists("Admin2"));
+            db.deconnexion();   
+    
+    }
+    
+    public static void test5(){
+        //ajouter un user et un mot de passe puis le recuperer et verifier si c'est le meme
+        MySQL_DB db = new MySQL_DB("localhost", "root", "");
+            db.connexion();            
+            byte [] pass =Digester.hacher("myPassword2");
+            db.addUser("Admin2", pass);  
+            byte [] pass2= db.getPassword("Admin2");
+            System.out.println("c'est le meme mot de passe: "+Digester.digestVerify(pass, pass2));
+            db.deconnexion();
     }
     
 }

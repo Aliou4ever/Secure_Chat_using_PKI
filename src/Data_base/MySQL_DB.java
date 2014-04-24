@@ -3,83 +3,125 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package data_base;
+
 import java.security.cert.X509Certificate;
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author khaled
  */
 public class MySQL_DB {
+
     private String url;// localhost
     private String login; //root
     private String password;// empty ""
-    private Connection con ;
-
-   
+    private Connection con;
 
     public MySQL_DB(String path, String login, String password) {
         this.url = path;
         this.login = login;
         this.password = password;
     }
-    public boolean connexion(){
+
+    public boolean connexion() {
         boolean retConn = false;
-        try{
+        try {
             Class.forName("com.mysql.jdbc.Driver");
-            String url= "jdbc:mysql://"+this.url+"/PKI2014?user="+login+"&password="+password;
-            con = DriverManager.getConnection(url,login,password);
+            String url = "jdbc:mysql://" + this.url + "/PKI2014?user=" + login + "&password=" + password;
+            con = DriverManager.getConnection(url, login, password);
             System.out.println("connexion a la base OK ");
             retConn = true;
-        }catch(Exception ex){
-            System.err.println("erreur de connexion a la base: "+ex);
+        } catch (Exception ex) {
+            System.err.println("erreur de connexion a la base: " + ex);
             retConn = false;
         }
-        return retConn;      
+        return retConn;
     }
-    
-    public boolean deconnexion(){
+
+    public boolean deconnexion() {
         boolean retDecon = false;
-        try{
+        try {
             con.close();
             System.out.println("deconnexion a la base OK ");
             retDecon = true;
-        }catch(Exception ex){
-        
+        } catch (Exception ex) {
+
         }
         return retDecon;
     }
-    
-    public void insertCertificat(X509Certificate cert, String login){
+
+    public void insertCertificat(X509Certificate cert, String login) {
         try {
-            byte [] bytes = cert.getEncoded();
-            String sql ="insert into Certificat(login,certificat)values(?,?)";
+            byte[] bytes = cert.getEncoded();
+            String sql = "insert into Certificat(login,certificat)values(?,?)";
             PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(sql);
             pstmt.setObject(1, login);
             pstmt.setBytes(2, bytes);
-            pstmt.execute();    
+            pstmt.execute();
             pstmt.close();
         } catch (Exception ex) {
-            System.err.println("Probeleme insert certificat dans la base: "+ex);
-        } 
+            System.err.println("Probeleme insert certificat dans la base: " + ex);
+        }
     }
-    
-    public X509Certificate getCertificate(String login){
-        byte [] bytes =null;
+
+    public X509Certificate getCertificate(String login) {
+        byte[] bytes = null;
         try {
-            String sql2="select * from Certificat where login='"+login+"'";
-            PreparedStatement ps=con.prepareStatement(sql2);
-            ResultSet rs =ps.executeQuery();
+            String sql2 = "select * from Certificat where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();
             rs.next();
             bytes = rs.getBytes("certificat");
-            ps.close();            
+            ps.close();
         } catch (Exception ex) {
-            System.err.println("Probeleme recuperation de certificat a partir de la base: "+ex);
+            System.err.println("Probeleme recuperation de certificat a partir de la base: " + ex);
         }
         return Utils.Certificate.recreateCertFromBytes(bytes);
     }
-    
+
+    public void addUser(String userLogin, byte[] password) {
+        try {
+            String insert = "insert into User(login,password)values(?,?)";
+            PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(insert);
+            pstmt.setObject(1, userLogin);
+            pstmt.setBytes(2, password);
+            pstmt.execute();
+            pstmt.close();
+        } catch (SQLException ex) {
+            System.err.println("erreur d'ajout d'un user: "+ex);
+        }
+    }
+    public boolean userExists(String login){
+        boolean ret = false;
+        try {
+            String sql2 = "select * from User where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();            
+            if(rs.next())ret=true;
+            ps.close();
+        } catch (Exception ex) {
+            System.err.println("Probeleme recherche user dans la base: " + ex);
+        }
+        return ret;
+    }
+    public byte[] getPassword(String login){
+        byte[] ret = null;
+        try {
+            String sql2 = "select * from User where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();            
+            if(rs.next())ret= rs.getBytes("password");
+            ps.close();
+        } catch (Exception ex) {
+            System.err.println("Probeleme recherche user dans la base: " + ex);
+        }
+        return ret;    
+    }
+
     public void setPath(String path) {
         this.url = path;
     }
@@ -103,13 +145,13 @@ public class MySQL_DB {
     public String getPassword() {
         return password;
     }
-    
-     public Connection getCon() {
+
+    public Connection getCon() {
         return con;
     }
 
     public void setCon(Connection con) {
         this.con = con;
     }
-    
+
 }
