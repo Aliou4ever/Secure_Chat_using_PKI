@@ -6,6 +6,8 @@
 
 package CAroot;
 
+import Utils.Keys;
+import View.FileChooser;
 import data_base.MySQL_DB;
 import javax.swing.JFrame;
 
@@ -164,6 +166,15 @@ public class CArootLogin extends javax.swing.JFrame {
             MySQL_DB db = new MySQL_DB(url, login, pass);
             if(db.connexion()) {
                 db.deconnexion();
+                String path =FileChooser.saveFile("CaRoot_Public_Key");
+                while(path == null){
+                    path =FileChooser.saveFile("CaRoot_Public_Key");
+                }
+                CAroot caRoot = new CAroot(url, login, pass);
+                Keys.savePublicKeyInFile(path,caRoot.getCaRoot_PublicKey());
+                //a faire
+                //apres la sauvegarde de la clé il faut lancer le serveur ...
+                
             }else Label_msg.setText("Veuillez entrer les bons parametres!");
             
         }

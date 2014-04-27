@@ -5,8 +5,10 @@
  */
 package data_base;
 
+import java.awt.List;
 import java.security.cert.X509Certificate;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,8 +23,8 @@ public class MySQL_DB {
     private String password;// empty ""
     private Connection con;
 
-    public MySQL_DB(String path, String login, String password) {
-        this.url = path;
+    public MySQL_DB(String url, String login, String password) {
+        this.url = url;
         this.login = login;
         this.password = password;
     }
@@ -120,6 +122,22 @@ public class MySQL_DB {
             System.err.println("Probeleme recherche user dans la base: " + ex);
         }
         return ret;    
+    }
+    
+    public String[] getListCAclient(){
+        ArrayList<String> caList = new ArrayList<String>();
+        try {
+            String sql2 = "select * from Certificat where login!='CAroot'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                caList.add((String) rs.getObject("login"));
+            }            
+            ps.close();
+        } catch (Exception ex) {
+            System.err.println("Probeleme recherche user dans la base: " + ex);
+        }        
+        return (caList.toArray(new String[caList.size()]));
     }
 
     public void setPath(String path) {
