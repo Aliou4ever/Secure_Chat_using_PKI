@@ -7,8 +7,11 @@
 package Chat;
 
 import CAclient.CAclient;
+import ProtocolChat.ObjectPassing;
+import Utils.MyCipher;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.security.Key;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -22,26 +25,24 @@ class ServerChatReceiver implements Runnable {
     CAclient ca;
     JTextArea txtToaffich;
     ObjectInputStream ios;
-
-    public ServerChatReceiver(CAclient ca,JTextArea txtToaffich, ObjectInputStream ios) {
+    Key sessionKey;
+    public ServerChatReceiver(CAclient ca,JTextArea txtToaffich, ObjectInputStream ios, Key sessionKey) {
         this.ca = ca;
         this.txtToaffich = txtToaffich;
         this.ios = ios;
+        this.sessionKey = sessionKey;
     }
-
-
 
     public void run() {
         while(true){
             try {
-                Object s =ios.readObject();
-                //decrepter le message et l'ajouet au txtToaffich
-                
-                
+                ObjectPassing s =(ObjectPassing) ios.readObject();
+                String msg = new String( MyCipher.desDecrypt(s.objDataArray, sessionKey));                
+                txtToaffich.setText(txtToaffich.getText()+"\n"+msg);                
             } catch (IOException ex) {
-                System.err.println("erreur lecture objet reçu du chat: "+ex);
+                System.err.println("erreur lecture objet reçu du chat: "+ex.toString());
             } catch (ClassNotFoundException ex) {
-                System.err.println("erreur lecture objet reçu du chat: "+ex);
+                System.err.println("erreur lecture objet reçu du chat: "+ex.toString());
             }
         }
             

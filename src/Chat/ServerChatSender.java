@@ -7,9 +7,12 @@
 package Chat;
 
 import CAclient.CAclient;
+import ProtocolChat.ObjectPassing;
+import Utils.MyCipher;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.security.Key;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -26,13 +29,15 @@ class ServerChatSender implements Runnable {
     JTextArea txtToaffich;
     ObjectOutputStream oos;
     JButton btn;
-
-    public ServerChatSender(CAclient ca, JTextField txtToSend, JTextArea txtToaffich, ObjectOutputStream oos, JButton btn) {
+    Key sessionKey;
+    public ServerChatSender(CAclient ca, JTextField txtToSend, JTextArea txtToaffich, ObjectOutputStream oos, 
+            JButton btn, Key sessionKey) {
         this.btn = btn;
         this.ca = ca;
         this.txtToSend = txtToSend;
         this.txtToaffich = txtToaffich;
-        this.oos = oos;        
+        this.oos = oos;
+        this.sessionKey = sessionKey;
     }
    
     public void run() {        
@@ -41,13 +46,17 @@ class ServerChatSender implements Runnable {
                if(!txtToSend.getText().equals("")){
                    try {
                        //crepter le message pui l'envoyer
-                       oos.writeObject(txtToSend.getText());
-                       
+                       String tosend = ca.getLogin()+" :";
+                       tosend   = tosend + txtToSend.getText();
+                       txtToSend.setText("");
+                       txtToaffich.setText(txtToaffich.getText()+"\n"+tosend);
+                       byte [] encryptedmsg = MyCipher.desEncrypt(tosend.getBytes(), sessionKey);
+                       ObjectPassing s = new ObjectPassing(encryptedmsg);
+                       oos.writeObject(s);                       
                    } catch (IOException ex) {
                        System.err.println("l'envoi de message a echoué! "+ex);
-                   }
-               }            
-                
+                   }                   
+               }          
             }            
         });        
     }

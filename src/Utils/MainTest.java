@@ -5,7 +5,9 @@
  */
 
 package Utils;
+import ProtocolChat.*;
 import data_base.MySQL_DB;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -14,8 +16,18 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
  * @author khaled
  */
 public class MainTest {
-    public static void main(String args[]) {  
-          
+    public static void main(String args[]) { 
+        MsgAtoB_1 msg= new MsgAtoB_1(new BigInteger(String.valueOf(System.currentTimeMillis())), "login");
+        byte [] tab = MySerializer.serialize(msg);
+        KeyPair key = Keys.generateKeyPair();
+        byte [] crypt = MyCipher.encrypt(tab, key.getPublic());
+        byte [] decrypt = MyCipher.decrypt(crypt,key.getPrivate() );
+        for(int i =0; i<tab.length; i++) System.out.print(tab[i]);
+        System.out.println("");
+        for(int i =0; i<decrypt.length; i++) System.out.print(decrypt[i]);
+        MsgAtoB_1 msg2 = (MsgAtoB_1) MySerializer.deserialize(decrypt);
+        System.out.println(msg.loginA+" nonce"+ msg.nonceA);
+        System.out.println(msg2.loginA+" nonce"+ msg2.nonceA);
     }
     public static void test1(){    
     //code pour inserer et recupercer un cerificat dans la base

@@ -11,6 +11,9 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.KeyGenerator;
 /**
  *
  * @author khaled
@@ -63,5 +66,16 @@ public class Keys {
         } catch (Exception ex) {
             System.err.println("Probeleme de sauvegarde de la cle public dans un fichier: "+ex);
         }
+    }
+    
+    public static Key generateSessionKey(){
+        Key key =null;
+        try {
+            KeyGenerator keys = KeyGenerator.getInstance("DES");
+            key = keys.generateKey();
+        } catch (NoSuchAlgorithmException ex) {
+            System.err.println("erreur generation de clé de session: "+ex);
+        }
+        return key;
     }
 }

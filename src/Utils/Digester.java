@@ -26,7 +26,17 @@ public class Digester {
         }
         return message_dg; 
     }
-    
+    public static byte[] hacher(byte [] msg){
+        byte [] message_dg =null;
+        try {
+            MessageDigest msg_digest = MessageDigest.getInstance("SHA-1");
+            msg_digest.update(msg);
+            message_dg = msg_digest.digest();
+        } catch (NoSuchAlgorithmException ex) {
+            System.err.println("erreur d'hachage du message: "+ex);
+        }
+        return message_dg; 
+    }
     public static boolean digestVerify( byte m1 [], byte m2 []){
         boolean ret =false;
         try {
