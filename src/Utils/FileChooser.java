@@ -5,38 +5,46 @@
  */
 
 package Utils;
-
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.GridLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.io.File;
+import javax.swing.JFileChooser;
 
 /**
  *
  * @author khaled
  */
-public class FileChooser extends JFrame {
-    private JTextField filename = new JTextField(), dir = new JTextField();
-    private JButton open = new JButton("Open"), save = new JButton("Save");
+public class FileChooser {
     
-    public FileChooser() {
-        JPanel p = new JPanel();
-        //open.addActionListener(new OpenL());
-        p.add(open);
-        //save.addActionListener(new SaveL());
-        p.add(save);
-        Container cp = getContentPane();
-        cp.add(p, BorderLayout.SOUTH);
-        dir.setEditable(false);
-        filename.setEditable(false);
-        p = new JPanel();
-        p.setLayout(new GridLayout(2, 1));
-        p.add(filename);
-        p.add(dir);
-        cp.add(p, BorderLayout.NORTH);
-      }
     
+    public static String saveFile(String name){
+        String path=null;
+        JFileChooser c = new JFileChooser();
+        c.setSelectedFile(new File(name));
+        int rVal = c.showSaveDialog(c);
+        if (rVal == JFileChooser.APPROVE_OPTION) {
+            String fileName =c.getSelectedFile().getName();        
+            String directory = c.getCurrentDirectory().toString();
+            path = directory +"\\"+fileName ;
+        }
+        if (rVal == JFileChooser.CANCEL_OPTION) {
+          
+        }
+        return path;
+    }
+    
+    public static String openFile(){
+        String path=null;
+        JFileChooser c = new JFileChooser();
+        // Demonstrate "Open" dialog:
+        int rVal = c.showOpenDialog(c);      
+        if (rVal == JFileChooser.APPROVE_OPTION) {
+           String fileName =c.getSelectedFile().getName();        
+           String directory =c.getCurrentDirectory().toString();
+           path = directory +"\\"+fileName;
+        }
+        if (rVal == JFileChooser.CANCEL_OPTION) {
+
+        }
+        return path;
+    
+    }
 }

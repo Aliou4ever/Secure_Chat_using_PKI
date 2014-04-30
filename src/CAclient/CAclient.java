@@ -22,10 +22,12 @@ public class CAclient {
     String login;
     PublicKey ca_PublicKey;
     PrivateKey ca_PrivateKey;
+    KeyPair keyPair;
 
     public CAclient(String bd_pass, String bd_login, String bd_url, String password, String login){
         //generer la pair de clé pour le CAroot
         KeyPair pair = Utils.Keys.generateKeyPair();
+        this.keyPair = pair;
         this.ca_PrivateKey = pair.getPrivate();
         this.ca_PublicKey = pair.getPublic();
         this.bd_pass = bd_pass;

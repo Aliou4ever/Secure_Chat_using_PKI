@@ -8,7 +8,7 @@ package ProtocolChat;
 
 import Utils.Digester;
 import Utils.MyCipher;
-import data_base.MySQL_DB;
+import Utils.MySQL_DB;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.PrivateKey;

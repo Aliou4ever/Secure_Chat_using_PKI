@@ -6,17 +6,12 @@
 
 package Chat;
 
-import CAclient.CAclient;
 import ProtocolChat.ChatSecure;
 import ProtocolChat.ObjectPassing;
-import data_base.MySQL_DB;
-import java.awt.TextField;
-import java.io.BufferedReader;
+import Utils.MySQL_DB;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -30,19 +25,29 @@ import javax.swing.JTextField;
  *
  * @author khaled
  */
-public class ServerChatCa {
-    CAclient ca;
+public class ServerChatCa extends Thread{
+    CA ca;
     int port;
-    
+    ServerSocket s;
 
-    public ServerChatCa(CAclient ca, JTextField txtToSend, JTextArea txtToaffich, int port) {
-        this.ca = ca;
-        this.port = port;
+    public ServerChatCa(CA ca, int port) {
+        try {
+            this.ca = ca;            
+            s = new ServerSocket(port);
+            this.port = s.getLocalPort();
+            MySQL_DB db = new MySQL_DB(ca.getBD_url(), ca.getBD_login(), ca.getBD_pass());
+            db.connexion();
+            db.updatChatPort(ca.getCa_login(), s.getLocalPort());
+            System.out.println("serverCaht: "+ca.ca_login+" port: "+port+" s_port: "+s.getLocalPort());
+            db.deconnexion();
+        } catch (IOException ex) {
+            System.err.println("erruer serveur chat"+ex.toString());
+        }
     }
     
     public void run(){
         try {
-            ServerSocket s = new ServerSocket(port);
+            
             while(true){
                 Socket socket = s.accept();
                 ChatGUI chatGui = new ChatGUI();
@@ -59,8 +64,8 @@ public class ServerChatCa {
                 }
                 //B -> A: {Nb, h(Na)}KA
                 BigInteger nonceB = new BigInteger(String.valueOf(System.currentTimeMillis()));
-                MySQL_DB db = new MySQL_DB(ca.getBd_url(), ca.getBd_login(), ca.getBd_pass());
-                ObjectPassing obj2= ChatSecure.BtoA_1(obj, nonceB, ca.getCa_PrivateKey(), db);
+                MySQL_DB db = new MySQL_DB(ca.BD_url, ca.BD_login, ca.BD_pass);
+                ObjectPassing obj2= ChatSecure.BtoA_1(obj, nonceB, ca.getCaKeyPair().getPrivate(), db);
                 oos.writeObject(obj2);
                 //A -> B: {h(Nb), keySession}KB
                 ObjectPassing obj3=null;
@@ -70,7 +75,7 @@ public class ServerChatCa {
                 } catch (ClassNotFoundException ex) {
                     System.err.println(ex.toString());
                 }
-                Key sessionKey = ChatSecure.BgetSessionKey(obj3, nonceB, ca.getCa_PrivateKey());
+                Key sessionKey = ChatSecure.BgetSessionKey(obj3, nonceB, ca.getCaKeyPair().getPrivate());
                 Thread t1 = new Thread(new ServerChatReceiver(ca,chatGui.getjTextArea1(),ios,sessionKey));
                 t1.start();
                 Thread t2 = new Thread(new ServerChatSender(ca,chatGui.getjTextField1(), 

@@ -6,13 +6,22 @@
 
 package CAclient;
 
+import Chat.CaListChat;
+import static Chat.CaListChat.listChatWhithoutUs;
+import Chat.CA;
+import Chat.ServerChatCa;
+import ServiceCert.ClientCert;
+import ServiceCert.ServerCert;
 import Utils.Keys;
-import View.FileChooser;
-import data_base.MySQL_DB;
+import Utils.FileChooser;
+import Utils.MySQL_DB;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.TimerTask;
 import javax.swing.JFrame;
 import javax.swing.JList;
 
@@ -25,21 +34,11 @@ public class AskForCert extends javax.swing.JFrame {
      * Creates new form AskForCert
      */
     CAclient ca;
-    public AskForCert(CAclient ca) {
-        initComponents();
+    
+    public AskForCert( CAclient ca) {
+        initComponents();        
         this.ca = ca;
-        MouseListener mouseListener = new MouseAdapter() {
-            public void mouseClicked(MouseEvent mouseEvent) {
-                JList theList = (JList) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() == 2) {
-                    int index = theList.locationToIndex(mouseEvent.getPoint());
-                    if (index >= 0) {
-                        Object o = theList.getModel().getElementAt(index);
-                        System.out.println("Double-clicked on: " + o.toString());
-                    }
-                }
-            }
-        };
+        MyMouseListenr mouseListener = new MyMouseListenr(this.ca, this);
         jList1.addMouseListener(mouseListener);
         MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
         db.connexion();
@@ -47,6 +46,46 @@ public class AskForCert extends javax.swing.JFrame {
         jList1.setListData(listCA);
         db.deconnexion();
         
+    }
+    
+    
+    private class MyMouseListenr implements MouseListener{
+        CAclient ca;
+        JFrame frame;
+        public MyMouseListenr( CAclient ca,  JFrame frame){
+            this.ca = ca;
+            this.frame = frame;
+        }
+        public void mouseClicked(MouseEvent me) {
+            JList theList = (JList) me.getSource();
+                if (me.getClickCount() == 2) {
+                    int index = theList.locationToIndex(me.getPoint());
+                    if (index >= 0) {
+                        Object o = theList.getModel().getElementAt(index);
+                        CA caServer = new CA(ca.keyPair, ca.getBd_url(), ca.bd_pass, ca.bd_login, ca.login);
+                        MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
+                        db.connexion();
+                        int port = db.getCertPort(o.toString());
+                        X509Certificate cert = db.getCertificate(o.toString());
+                        db.deconnexion();
+                        ClientCert ask =new ClientCert(caServer, port, "localhost", cert.getPublicKey());
+                        ask.start();
+                        ServerCert serveurCert = new  ServerCert(caServer, 0);
+                        serveurCert.start();
+                        ServerChatCa serveurChat = new ServerChatCa(caServer, 0);
+                        serveurChat.start();
+                        JFrame chat = new CaListChat(caServer);
+                        chat.setVisible(true);
+                        chat.setLocationRelativeTo(null);
+                        frame.setVisible(false);
+                        System.out.println("Double-clicked on: " + o.toString());
+                    }
+                }
+        }
+        public void mousePressed(MouseEvent me) {}
+        public void mouseReleased(MouseEvent me) {}
+        public void mouseEntered(MouseEvent me) {}
+        public void mouseExited(MouseEvent me) {}   
     }
 
     /**
@@ -140,6 +179,21 @@ public class AskForCert extends javax.swing.JFrame {
             PublicKey caRootPkey = Keys.recreatePublicKey(path);
             //se connecter au CAroot et lui envoyer la demande de certification
             //cryptée avec sa clé publique
+            CA caServer = new CA(ca.keyPair, ca.getBd_url(), ca.bd_pass, ca.bd_login, ca.login);
+            MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
+            db.connexion();
+            X509Certificate cert= db.getCertificate(CAroot.CAroot.CaRootlogin);
+            int port = db.getCertPort(CAroot.CAroot.CaRootlogin);
+            ClientCert ask =new ClientCert(caServer, port, "localhost", cert.getPublicKey());
+            ask.start();
+            ServerCert serveurCert = new  ServerCert(caServer, 0);
+            serveurCert.start();
+            ServerChatCa serveurChat = new ServerChatCa(caServer, 0);
+            serveurChat.start();
+            JFrame frame = new CaListChat(caServer);
+            frame.setVisible(true);
+            frame.setLocationRelativeTo(null);
+            this.setVisible(false);
         }        
         
     }//GEN-LAST:event_jButton1ActionPerformed

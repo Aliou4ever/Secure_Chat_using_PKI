@@ -3,14 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package data_base;
+package Utils;
 
-import java.awt.List;
 import java.security.cert.X509Certificate;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -59,15 +56,101 @@ public class MySQL_DB {
     public void insertCertificat(X509Certificate cert, String login) {
         try {
             byte[] bytes = cert.getEncoded();
-            String sql = "insert into Certificat(login,certificat)values(?,?)";
+            String sql = "insert into Certificat(login,certificat,certToRevok)values(?,?,?)";
             PreparedStatement pstmt = (PreparedStatement) con.prepareStatement(sql);
             pstmt.setObject(1, login);
             pstmt.setBytes(2, bytes);
+            pstmt.setBoolean(3, false);
             pstmt.execute();
             pstmt.close();
         } catch (Exception ex) {
             System.err.println("Probeleme insert certificat dans la base: " + ex);
         }
+    }
+    public  void updatChatPort(String login, int port){
+        try{
+            // create the java mysql update preparedstatement
+            String query = "update Certificat set chatPort = ? where login = ?";
+            PreparedStatement preparedStmt = (PreparedStatement) con.prepareStatement(query);
+            preparedStmt.setInt   (1, port);
+            preparedStmt.setString(2, login);
+            // execute the java preparedstatement
+            preparedStmt.executeUpdate();        
+        }catch(Exception ex){
+            System.err.println(ex.toString());
+        }    
+    }
+    public void updatCertPort(String login, int port){
+         try{
+            // create the java mysql update preparedstatement
+            String query = "update Certificat set certPort = ? where login = ?";
+            PreparedStatement preparedStmt = (PreparedStatement) con.prepareStatement(query);
+            preparedStmt.setInt   (1, port);
+            preparedStmt.setString(2, login);
+            // execute the java preparedstatement
+            preparedStmt.executeUpdate();        
+        }catch(Exception ex){
+            System.err.println(ex.toString());
+        }    
+    }
+    public boolean certIsTorevok(String login){
+        boolean isto;
+        try {
+            String sql2 = "select * from Certificat where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            isto = rs.getBoolean("certToRevok");
+            ps.close();
+            return isto;
+        } catch (Exception ex) {
+            System.err.println("Probeleme recuperation certToRevok partir de la base: " + ex.toString());
+            return false;
+        }
+    
+    }
+    public void revokCert(String login ){
+            try{
+            
+            String query = "update Certificat set certToRevok = ? where login = ?";
+            PreparedStatement preparedStmt = (PreparedStatement) con.prepareStatement(query);
+            preparedStmt.setBoolean(1, true);
+            preparedStmt.setString(2, login);
+            // execute the java preparedstatement
+            preparedStmt.executeUpdate();        
+        }catch(Exception ex){
+            System.err.println(ex.toString());
+        }    
+    }
+    public int getChatport(String login){
+        int port;
+        try {
+            String sql2 = "select * from Certificat where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            port = rs.getInt("chatPort");
+            ps.close();
+            return port;
+        } catch (Exception ex) {
+            System.err.println("Probeleme recuperation chatPort partir de la base: " + ex.toString());
+            return 0;
+        }
+    }
+    public int getCertPort(String login){
+        int port;
+        try {
+            String sql2 = "select * from Certificat where login='" + login + "'";
+            PreparedStatement ps = con.prepareStatement(sql2);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            port = rs.getInt("certPort");
+            ps.close();
+            return port;
+        } catch (Exception ex) {
+            System.err.println("Probeleme recuperation certPort partir de la base: " + ex.toString());
+            return 0;
+        }    
     }
 
     public X509Certificate getCertificate(String login) {
@@ -81,6 +164,7 @@ public class MySQL_DB {
             ps.close();
         } catch (Exception ex) {
             System.err.println("Probeleme recuperation de certificat a partir de la base: " + ex);
+            return null;
         }
         return Utils.Certificate.recreateCertFromBytes(bytes);
     }

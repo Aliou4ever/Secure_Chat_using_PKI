@@ -6,9 +6,13 @@
 
 package CAroot;
 
+import Chat.CaListChat;
+import Chat.CA;
+import Chat.ServerChatCa;
+import ServiceCert.ServerCert;
 import Utils.Keys;
-import View.FileChooser;
-import data_base.MySQL_DB;
+import Utils.FileChooser;
+import Utils.MySQL_DB;
 import javax.swing.JFrame;
 
 /**
@@ -20,8 +24,11 @@ public class CArootLogin extends javax.swing.JFrame {
     /**
      * Creates new form CArootLogin
      */
+    JFrame thisFrame; 
     public CArootLogin() {
         initComponents();
+        
+        this.thisFrame = this;
     }
 
     /**
@@ -165,16 +172,26 @@ public class CArootLogin extends javax.swing.JFrame {
         }else{
             MySQL_DB db = new MySQL_DB(url, login, pass);
             if(db.connexion()) {
-                db.deconnexion();
+                
                 String path =FileChooser.saveFile("CaRoot_Public_Key");
                 while(path == null){
                     path =FileChooser.saveFile("CaRoot_Public_Key");
                 }
                 CAroot caRoot = new CAroot(url, login, pass);
+                CA ca = new CA(caRoot.keyPair, caRoot.BD_url, caRoot.BD_pass, caRoot.BD_login, caRoot.CaRootlogin);                
                 Keys.savePublicKeyInFile(path,caRoot.getCaRoot_PublicKey());
-                //a faire
-                //apres la sauvegarde de la clé il faut lancer le serveur ...
-                
+                db.insertCertificat(caRoot.caRoot_Cert, caRoot.CaRootlogin);
+                db.deconnexion();
+                ServerCert serveCert = new ServerCert(ca, 0);
+                serveCert.start();
+                ServerCert serveurCert = new  ServerCert(ca, 0);
+                serveurCert.start();
+                ServerChatCa serveurChat = new ServerChatCa(ca, 0);
+                serveurChat.start();                 
+                thisFrame.setVisible(false);
+                JFrame frame = new  CaListChat(ca);
+                frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
             }else Label_msg.setText("Veuillez entrer les bons parametres!");
             
         }

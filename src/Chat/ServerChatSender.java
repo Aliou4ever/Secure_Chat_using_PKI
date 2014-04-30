@@ -24,13 +24,13 @@ import javax.swing.JTextField;
  * @author khaled
  */
 class ServerChatSender implements Runnable {
-    CAclient ca;
+    CA ca;
     JTextField txtToSend;
     JTextArea txtToaffich;
     ObjectOutputStream oos;
     JButton btn;
     Key sessionKey;
-    public ServerChatSender(CAclient ca, JTextField txtToSend, JTextArea txtToaffich, ObjectOutputStream oos, 
+    public ServerChatSender(CA ca, JTextField txtToSend, JTextArea txtToaffich, ObjectOutputStream oos, 
             JButton btn, Key sessionKey) {
         this.btn = btn;
         this.ca = ca;
@@ -46,7 +46,7 @@ class ServerChatSender implements Runnable {
                if(!txtToSend.getText().equals("")){
                    try {
                        //crepter le message pui l'envoyer
-                       String tosend = ca.getLogin()+" :";
+                       String tosend = ca.ca_login+" :";
                        tosend   = tosend + txtToSend.getText();
                        txtToSend.setText("");
                        txtToaffich.setText(txtToaffich.getText()+"\n"+tosend);

@@ -7,8 +7,7 @@
 package CAclient;
 
 import Utils.Digester;
-import data_base.MySQL_DB;
-import static java.lang.System.exit;
+import Utils.MySQL_DB;
 import javax.swing.JFrame;
 
 /**
@@ -209,24 +208,24 @@ public class CaClientLogin extends javax.swing.JFrame {
         }else{
             MySQL_DB db = new MySQL_DB(bd_url, bd_login, bd_pass);
             if(db.connexion()) {
-                if (db.userExists(caLogin)) {
-                    byte [] pass=db.getPassword(caLogin);
-                    if(Digester.digestVerify(pass, Digester.hacher(caPass))){
-                        db.deconnexion();  
-                        //connexion ok
-                        //a faire lancer le serveur caClient
-                        CAclient ca = new CAclient(bd_pass, bd_login,bd_url, caPass, caLogin);
-                        JFrame frame = new AskForCert(ca);
-                        frame.setVisible(true);
-                        frame.setLocationRelativeTo(null);
-                        this.setVisible(false);
+                if (db.userExists(caLogin)) {                    
+                        byte [] pass=db.getPassword(caLogin);
+                        if(Digester.digestVerify(pass, Digester.hacher(caPass))){
+                            if(db.getCertificate(caLogin)==null){
+                                db.deconnexion();  
+                                //connexion ok
+                                CAclient ca = new CAclient(bd_pass, bd_login,bd_url, caPass, caLogin);
+                                JFrame frame = new AskForCert(ca);
+                                frame.setVisible(true);
+                                frame.setLocationRelativeTo(null);
+                                this.setVisible(false);
+                        }else Label_msg.setText("Client Deja en ligne!");
                     }else Label_msg.setText("Veuillez enter le bon password Client!");
                 } else {
                     Label_msg.setText("Veuillez enter le bon login Client!");
                 }
                     
-            db.deconnexion();
-                
+            db.deconnexion();                
             }else Label_msg.setText("Veuillez entrer les bons parametres de la base");
             
             

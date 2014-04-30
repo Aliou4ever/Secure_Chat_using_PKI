@@ -6,7 +6,6 @@
 
 package Utils;
 import ProtocolChat.*;
-import data_base.MySQL_DB;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -17,29 +16,42 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
  */
 public class MainTest {
     public static void main(String args[]) { 
+        test1();
+    }
+    
+    public static void testRsa(){
         MsgAtoB_1 msg= new MsgAtoB_1(new BigInteger(String.valueOf(System.currentTimeMillis())), "login");
         byte [] tab = MySerializer.serialize(msg);
         KeyPair key = Keys.generateKeyPair();
-        byte [] crypt = MyCipher.encrypt(tab, key.getPublic());
-        byte [] decrypt = MyCipher.decrypt(crypt,key.getPrivate() );
+        byte [] crypt = MyCipher.rsaEncrypt(tab, key.getPublic());
+        byte [] decrypt = MyCipher.rsaDecrypt(crypt,key.getPrivate() );
         for(int i =0; i<tab.length; i++) System.out.print(tab[i]);
         System.out.println("");
         for(int i =0; i<decrypt.length; i++) System.out.print(decrypt[i]);
         MsgAtoB_1 msg2 = (MsgAtoB_1) MySerializer.deserialize(decrypt);
         System.out.println(msg.loginA+" nonce"+ msg.nonceA);
         System.out.println(msg2.loginA+" nonce"+ msg2.nonceA);
+    
     }
     public static void test1(){    
     //code pour inserer et recupercer un cerificat dans la base
         KeyPair pair = Keys.generateKeyPair();        
-        X509Certificate cert = Certificate.generateCertForCAroot(pair);       
+        X509Certificate cert = Certificate.generateCertForCAroot(pair); 
+        String login = "CA4";
         MySQL_DB bd = new MySQL_DB("localhost","root","");
         bd.connexion();
-        bd.insertCertificat(cert,"CAroot4");
-        X509Certificate cert3 = bd.getCertificate("CAroot4");
+        bd.insertCertificat(cert,login);
+        X509Certificate cert3 = bd.getCertificate(login);
+        bd.updatChatPort(login, 1024);
+        bd.updatCertPort(login, 1025);
+        System.out.println("chatPort: "+bd.getChatport(login)+" certPort: "+bd.getCertPort(login)
+                               +" certTorevok: "+bd.certIsTorevok(login) );
+        bd.revokCert(login);
+        System.out.println(" cert revoked :"+bd.certIsTorevok(login));
         bd.deconnexion();        
         if(cert3.equals(cert)) System.out.println("yes :) c'est le meme certificat on a bien réussi a l'avoir");
         else System.err.println("ça n'a pas marché :( Koooooooooooooooo");
+        
         
     }
     public static void test2(){

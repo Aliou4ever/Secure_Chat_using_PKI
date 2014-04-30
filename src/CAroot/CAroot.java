@@ -21,10 +21,12 @@ public class CAroot {
     String BD_url;
     String BD_pass;
     String BD_login;
-
+    KeyPair keyPair;
+    public final static String CaRootlogin = "CaRoot";
     public CAroot(String BD_url, String BD_login, String BDpass) {        
             //generer la pair de clé pour le CAroot
             KeyPair pair = Utils.Keys.generateKeyPair();
+            this.keyPair = pair;
             this.caRoot_PrivateKey = pair.getPrivate();
             this.caRoot_PublicKey = pair.getPublic();
             this.caRoot_Cert = Utils.Certificate.generateCertForCAroot(pair);
