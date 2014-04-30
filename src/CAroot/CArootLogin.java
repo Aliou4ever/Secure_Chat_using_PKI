@@ -182,8 +182,6 @@ public class CArootLogin extends javax.swing.JFrame {
                 Keys.savePublicKeyInFile(path,caRoot.getCaRoot_PublicKey());
                 db.insertCertificat(caRoot.caRoot_Cert, caRoot.CaRootlogin);
                 db.deconnexion();
-                ServerCert serveCert = new ServerCert(ca, 0);
-                serveCert.start();
                 ServerCert serveurCert = new  ServerCert(ca, 0);
                 serveurCert.start();
                 ServerChatCa serveurChat = new ServerChatCa(ca, 0);

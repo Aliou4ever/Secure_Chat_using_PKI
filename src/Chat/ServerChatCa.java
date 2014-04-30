@@ -38,7 +38,7 @@ public class ServerChatCa extends Thread{
             MySQL_DB db = new MySQL_DB(ca.getBD_url(), ca.getBD_login(), ca.getBD_pass());
             db.connexion();
             db.updatChatPort(ca.getCa_login(), s.getLocalPort());
-            System.out.println("serverCaht: "+ca.ca_login+" port: "+port+" s_port: "+s.getLocalPort());
+            System.out.println("serverCaht: "+ca.ca_login+"s_port: "+s.getLocalPort());
             db.deconnexion();
         } catch (IOException ex) {
             System.err.println("erruer serveur chat"+ex.toString());
@@ -50,6 +50,7 @@ public class ServerChatCa extends Thread{
             
             while(true){
                 Socket socket = s.accept();
+                System.out.println("un client s'est connecté au chat: ");
                 ChatGUI chatGui = new ChatGUI();
                 chatGui.setVisible(true);
                 chatGui.setLocationRelativeTo(null);

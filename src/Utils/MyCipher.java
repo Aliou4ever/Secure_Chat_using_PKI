@@ -26,48 +26,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
  */
 public class MyCipher {    
     
-//    public static byte[] rsaEncrypt(byte [] msg, PublicKey pkey){
-//        byte [] chif=null;        
-//        try {
-//            Security.addProvider(new BouncyCastleProvider());
-//            Cipher c = Cipher.getInstance("RSA");
-//            c.init(Cipher.ENCRYPT_MODE, pkey);
-//            chif= c.doFinal(msg);
-//        } catch (NoSuchAlgorithmException ex) {
-//            System.err.println("erreur de cryptage dans Mycipher: "+ex);
-//        } catch (NoSuchPaddingException ex) {
-//            System.err.println("erreur de cryptage dans Mycipher: "+ex);
-//        } catch (InvalidKeyException ex) {
-//            System.err.println("erreur de cryptage dans Mycipher: "+ex);
-//        } catch (IllegalBlockSizeException ex) {
-//            System.err.println("erreur de cryptage dans Mycipher: "+ex);
-//        } catch (BadPaddingException ex) {
-//            System.err.println("erreur de cryptage dans Mycipher: "+ex);
-//        }
-//        return chif;
-//    }
-//    
-//    public static byte [] rsaDecrypt(byte [] msg, PrivateKey key){
-//        byte[] dechif=null;
-//        try {            
-//            Security.addProvider(new BouncyCastleProvider());
-//            Cipher d = Cipher.getInstance("RSA");
-//            d.init(Cipher.DECRYPT_MODE, key);
-//            dechif = d.doFinal(msg);
-//            
-//        } catch (NoSuchAlgorithmException ex) {
-//            System.err.println("erreur de decryptage rsa dans Mycipher: "+ex);
-//        } catch (NoSuchPaddingException ex) {
-//             System.err.println("erreur de decryptage rsa dans Mycipher: "+ex);
-//        } catch (InvalidKeyException ex) {
-//            System.err.println("erreur de decryptage rsa dans Mycipher: "+ex);
-//        } catch (IllegalBlockSizeException ex) {
-//            System.err.println("erreur de decryptage rsa dans Mycipher: "+ex);
-//        } catch (BadPaddingException ex) {
-//             System.err.println("erreur de decryptage rsa dans Mycipher: "+ex);
-//        }
-//        return dechif;
-//    }
+
     
     public static  byte[] desEncrypt(byte[] msg, Key key ){
         byte[] chif =null;

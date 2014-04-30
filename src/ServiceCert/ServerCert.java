@@ -37,7 +37,7 @@ public class ServerCert extends Thread{
             System.out.println("serveur Cert:"+ ca.getCa_login()+" en ecoute sur le port: "+this.port);
             MySQL_DB db = new MySQL_DB(ca.getBD_url(), ca.getBD_login(), ca.getBD_pass());
             db.connexion();
-            db.updatCertPort(ca.getCa_login(), this.port);
+            db.updatCertPort(ca.getCa_login(), s.getLocalPort());
             db.deconnexion();
         } catch (IOException ex) {
             System.err.println("erruer serveur cert Ca :"+ex.toString());
