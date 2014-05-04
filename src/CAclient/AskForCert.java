@@ -6,8 +6,8 @@
 
 package CAclient;
 
+import CAroot.CAroot;
 import Chat.CaListChat;
-import static Chat.CaListChat.listChatWhithoutUs;
 import Chat.CA;
 import Chat.ServerChatCa;
 import ServiceCert.ClientCert;
@@ -15,13 +15,14 @@ import ServiceCert.ServerCert;
 import Utils.Keys;
 import Utils.FileChooser;
 import Utils.MySQL_DB;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import static java.lang.Thread.sleep;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JList;
 
@@ -33,27 +34,34 @@ public class AskForCert extends javax.swing.JFrame {
     /**
      * Creates new form AskForCert
      */
-    CAclient ca;
+    CAclient caClient;
     
     public AskForCert( CAclient ca) {
         initComponents();        
-        this.ca = ca;
-        MyMouseListenr mouseListener = new MyMouseListenr(this.ca, this);
+        this.caClient = ca;
+        MyMouseListenr mouseListener = new MyMouseListenr(this.caClient, this);
         jList1.addMouseListener(mouseListener);
         MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
         db.connexion();
         String listCA[] = db.getListCAclient();
-        jList1.setListData(listCA);
-        db.deconnexion();
-        
+        jList1.setListData(listCawithoutRoot(listCA));
+        db.deconnexion();        
+    }
+    public static String[] listCawithoutRoot(String [] calist){
+        ArrayList<String> l = new ArrayList<String>();
+        for(int i=0; i<calist.length;i++){
+            if(!calist[i].equals(CAroot.CaRootlogin)){
+                l.add(calist[i]);
+            }     
+        }
+        return (l.toArray(new String[l.size()]));
     }
     
-    
     private class MyMouseListenr implements MouseListener{
-        CAclient ca;
+        CAclient caClient;
         JFrame frame;
         public MyMouseListenr( CAclient ca,  JFrame frame){
-            this.ca = ca;
+            this.caClient = ca;
             this.frame = frame;
         }
         public void mouseClicked(MouseEvent me) {
@@ -61,26 +69,41 @@ public class AskForCert extends javax.swing.JFrame {
                 if (me.getClickCount() == 2) {
                     int index = theList.locationToIndex(me.getPoint());
                     if (index >= 0) {
-                        Object o = theList.getModel().getElementAt(index);
-                        CA caServer = new CA(ca.keyPair, ca.getBd_url(), ca.bd_pass, ca.bd_login, ca.login);
-                        MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
+                        Object o = theList.getModel().getElementAt(index);                        
+                        MySQL_DB db = new MySQL_DB(caClient.bd_url, caClient.bd_login, caClient.bd_pass);
                         db.connexion();
                         int port = db.getCertPort(o.toString());
-                        X509Certificate cert = db.getCertificate(o.toString());
-                        db.deconnexion();
-                        ClientCert ask =new ClientCert(caServer, port, "localhost", cert.getPublicKey());
+                        X509Certificate cert = db.getCertificate(o.toString());                        
+                        CA caThclientCert = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+                        ClientCert ask =new ClientCert(caThclientCert, port, "localhost", cert.getPublicKey());
                         ask.start();
-                        ServerCert serveurCert = new  ServerCert(caServer, 0);
+                        //attente certification
+                        boolean attente = true;
+                        while (attente) {
+                            if (db.getCertificate(caClient.login) != null) {
+                                attente = false;
+                            } else {
+                                try {
+                                    sleep(1000);
+                                } catch (InterruptedException ex) {
+                                    System.err.println("erreur attente certification" + ex.toString());
+                                }
+                            }
+                        }
+                        db.deconnexion();
+                        CA caThservertCert = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+                        ServerCert serveurCert = new  ServerCert(caThservertCert, 0);
                         serveurCert.start();
-                        ServerChatCa serveurChat = new ServerChatCa(caServer, 0);
+                        CA caThservertChat = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+                        ServerChatCa serveurChat = new ServerChatCa(caThservertChat, 0);
                         serveurChat.start();
-                        JFrame chat = new CaListChat(caServer);
+                        CA caChatList = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);  
+                        JFrame chat = new CaListChat(caChatList);
                         chat.setVisible(true);
                         chat.setLocationRelativeTo(null);
                         frame.setVisible(false);
                         System.out.println("Double-clicked on: " + o.toString());
-                    }
-                }
+                    }                }
         }
         public void mousePressed(MouseEvent me) {}
         public void mouseReleased(MouseEvent me) {}
@@ -179,18 +202,37 @@ public class AskForCert extends javax.swing.JFrame {
             PublicKey caRootPkey = Keys.recreatePublicKey(path);
             //se connecter au CAroot et lui envoyer la demande de certification
             //cryptée avec sa clé publique
-            CA caServer = new CA(ca.keyPair, ca.getBd_url(), ca.bd_pass, ca.bd_login, ca.login);
-            MySQL_DB db = new MySQL_DB(ca.bd_url, ca.bd_login, ca.bd_pass);
+            
+            MySQL_DB db = new MySQL_DB(caClient.bd_url, caClient.bd_login, caClient.bd_pass);
             db.connexion();
-            X509Certificate cert= db.getCertificate(CAroot.CAroot.CaRootlogin);
-            int port = db.getCertPort(CAroot.CAroot.CaRootlogin);
-            ClientCert ask =new ClientCert(caServer, port, "localhost", cert.getPublicKey());
+            X509Certificate cert= db.getCertificate(CAroot.CaRootlogin);
+            int port = db.getCertPort(CAroot.CaRootlogin);
+            
+            CA caClientcert = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+            ClientCert ask =new ClientCert(caClientcert, port, "localhost", cert.getPublicKey());
             ask.start();
-            ServerCert serveurCert = new  ServerCert(caServer, 0);
+            //attente certification
+            boolean attente =true;
+            while(attente){
+                if(db.getCertificate(caClient.login)!=null){
+                    attente =false;
+                }else{
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException ex) {
+                        System.err.println("erreur attente certification"+ex.toString());
+                    }
+                }            
+            }            
+            db.deconnexion();
+            CA caServerCert = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+            ServerCert serveurCert = new  ServerCert(caServerCert, 0);
             serveurCert.start();
-            ServerChatCa serveurChat = new ServerChatCa(caServer, 0);
+            CA caServerChat = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+            ServerChatCa serveurChat = new ServerChatCa(caServerChat, 0);
             serveurChat.start();
-            JFrame frame = new CaListChat(caServer);
+            CA ca = new CA(caClient.keyPair, caClient.bd_url, caClient.bd_pass, caClient.bd_login, caClient.login);
+            JFrame frame = new CaListChat(ca);
             frame.setVisible(true);
             frame.setLocationRelativeTo(null);
             this.setVisible(false);

@@ -21,6 +21,7 @@ public class ChatGUI extends javax.swing.JFrame {
      */
     public ChatGUI() {
         initComponents();
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     public JButton getBtn_Send() {
@@ -52,13 +53,11 @@ public class ChatGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTextField1.setText("jTextField1");
-
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
 
-        btn_Send.setText("jButton1");
+        btn_Send.setText("Send");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

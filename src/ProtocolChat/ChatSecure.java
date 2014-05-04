@@ -41,7 +41,7 @@ public class ChatSecure {
         MsgAtoB_1 msg = (MsgAtoB_1) MySerializer.deserialize(decryped);
         db.connexion();
         X509Certificate cert = db.getCertificate(msg.loginA);
-        db.connexion();
+        db.deconnexion();
         MsgBtoA_1 msgTosend = new MsgBtoA_1(nonceB, Digester.hacher(msg.nonceA.toByteArray()));       
         byte[] crypted = MyCipher.rsaEncrypt(MySerializer.serialize(msgTosend), cert.getPublicKey());
         ObjectPassing msg_ser = new ObjectPassing(crypted);

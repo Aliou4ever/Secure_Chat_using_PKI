@@ -6,10 +6,8 @@
 
 package Chat;
 
-import Chat.CA;
 import ServiceCert.ClientCert;
 import Utils.MySQL_DB;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.security.cert.X509Certificate;
@@ -37,11 +35,12 @@ public class CaListChat extends javax.swing.JFrame {
         jList1.addMouseListener(mouseListener);
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new MyTimer(jList1, ca, chatsEncours), 0, 2000);
+        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }    
     public static String[] listChatWhithoutUs(String[] listClients, CA ca,ArrayList<String> chatsEncours){        
         ArrayList<String> l = new ArrayList<String>();
         for(int i=0; i<listClients.length;i++){
-            if(!listClients[i].equals(ca.getCa_login()) | !chatsEncours.contains(listClients[i])){
+            if(!(listClients[i].equals(ca.getCa_login()) | chatsEncours.contains(listClients[i]))){
                 l.add(listClients[i]);
             }
         }
@@ -58,7 +57,7 @@ public class CaListChat extends javax.swing.JFrame {
         }
             @Override
             public void run() {
-                System.out.println("Hello World !");
+                System.out.println("mise a jour de la liste des contacts... !"+ca.ca_login);
                 MySQL_DB db = new MySQL_DB(ca.getBD_url(), ca.getBD_login(), ca.getBD_pass());
                 db.connexion();
                 String listCA[] = db.getListCAclient();
@@ -89,9 +88,9 @@ public class CaListChat extends javax.swing.JFrame {
                             int port = db.getChatport(o.toString());
                             X509Certificate cert = db.getCertificate(o.toString());
                             db.deconnexion();
-                            ClientCert ask =new ClientCert(ca, port, "localhost", cert.getPublicKey());
+                            ClientChat ask =new ClientChat(ca, port, "localhost", cert.getPublicKey());
                             ask.start();
-                            frame.dispose();
+                            
                         }
                     }
                 }

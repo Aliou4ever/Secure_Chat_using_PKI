@@ -211,7 +211,7 @@ public class MySQL_DB {
     public String[] getListCAclient(){
         ArrayList<String> caList = new ArrayList<String>();
         try {
-            String sql2 = "select * from Certificat where login!='CAroot'";
+            String sql2 = "select * from Certificat ";
             PreparedStatement ps = con.prepareStatement(sql2);
             ResultSet rs = ps.executeQuery();
             while(rs.next()){
@@ -222,6 +222,18 @@ public class MySQL_DB {
             System.err.println("Probeleme recherche user dans la base: " + ex);
         }        
         return (caList.toArray(new String[caList.size()]));
+    }
+    
+    public void deleteCert(String login){
+        try {
+            String sql = "DELETE FROM Certificat where login = ? LIMIT 1";
+            PreparedStatement pstmt = con.prepareStatement(sql); 
+            pstmt.setString(1, login);
+            pstmt.executeUpdate();          
+        } catch (Exception ex) {
+            System.err.println("Probeleme supprission cert dans la base: " + ex);
+        }        
+    
     }
 
     public void setPath(String path) {
