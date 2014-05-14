@@ -21,4 +21,8 @@ connexion.
 sécurisé, avec une gestion de type PKI des clés et génération de clé de session à partir de
 la nonce NB.
 
+1) il faut inclure les 3 librairies  qui sont dans le dossier "Jar a inclure"
+2) créer une base de données MySQL avec le fichier "dataBase_PKI2014.sql"
+3) une petite démonstration en vidéo sur l'utilisation de l'application: http://www.youtube.com/watch?v=38HRivBa1GI 
+
 MyProjectGitHub
