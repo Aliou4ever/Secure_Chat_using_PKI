@@ -21,7 +21,7 @@ connexion.
 sécurisé, avec une gestion de type PKI des clés et génération de clé de session à partir de
 la nonce NB.
 
-1) il faut inclure les 3 librairies  qui sont dans le dossier "Jar a inclure"
+1) il faut inclure les 2 librairies BouncyCastle "bcpkix-jdk15on-150.jar" et "bcprov-jdk15on-150.jar" à télécharger sur le le site de BouncyCastle: http://www.bouncycastle.org/fr/latest_releases.html et une autre pour les connextion a la base de données "mysql-connector-java-5.1.30-bin.jar"  lien: http://dev.mysql.com/downloads/file.php?id=451547 
 2) créer une base de données MySQL avec le fichier "dataBase_PKI2014.sql"
 3) une petite démonstration en vidéo sur l'utilisation de l'application: http://www.youtube.com/watch?v=38HRivBa1GI 
 
